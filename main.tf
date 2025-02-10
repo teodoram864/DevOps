@@ -53,6 +53,7 @@ module "nic_front" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   subnet_id           = module.network.subnet_ids["FrontNet"]
+  public_ip_address_id = azurerm_public_ip.public_ip.id
 }
 
 module "nic_back" {
@@ -62,6 +63,7 @@ module "nic_back" {
   resource_group_name = azurerm_resource_group.rg.name
   subnet_id           = module.network.subnet_ids["BackNet"]
 }
+
 
 module "network_interface" {
   source              = "./Modules/nic"
