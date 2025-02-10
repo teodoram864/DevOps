@@ -10,7 +10,7 @@ resource "azurerm_network_interface" "nic1" {
 
     ip_configuration {
         name = "NicConfigurationFront"
-        subnet_id                     = module.network.subnet_ids["subnet1"]
+        subnet_id                     = module.network.subnet_ids["FrontNet"]
         private_ip_address_allocation = "Dynamic"
         public_ip_address_id          = azurerm_public_ip.public_ip.id
     }
@@ -22,7 +22,7 @@ resource "azurerm_network_interface" "nic2" {
 
     ip_configuration {
         name                          = "NicConfigurationBack"
-        subnet_id                    = module.network.subnet_ids["subnet2"]
+        subnet_id                    = module.network.subnet_ids["BackNet"]
         private_ip_address_allocation = "Dynamic"
     }
 }
