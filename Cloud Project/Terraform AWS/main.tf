@@ -8,7 +8,7 @@ variable "private_key_path" {}
 variable "key_name" {}
 
 variable "region" {
-    default = "us-east-1"
+    default = "us-east-2"
 }
 
 #PROVIDERS
@@ -19,26 +19,24 @@ provider "aws" {
 }
 
 #DATA
-data "aws_ami" "aws_linux" {
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
 
-    most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-20.04-amd64-server-*"]
+  }
 
-    owners = ["amazon"]
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
 
-    filter {
-        name = "name"
-        values = ["amzn2-ami-hvm*"]
-    }
-
-    filter {
-        name = "root-device-type"
-        values = ["ebs"]
-    }
-
-    filter {
-        name = "virtualization-type"
-        values = ["hvm"]
-    }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 data "aws_subnets" "default" {
   filter {
