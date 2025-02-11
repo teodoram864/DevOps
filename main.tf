@@ -3,30 +3,6 @@ resource "azurerm_resource_group" "rg" {
   location = "West Europe"
 }
 
-resource "azurerm_network_interface" "nic1" {
-    name = var.network_interface_name_1
-    resource_group_name = azurerm_resource_group.rg.name
-    location = azurerm_resource_group.rg.location
-
-    ip_configuration {
-        name = "NicConfigurationFront"
-        subnet_id                     = module.network.subnet_ids["FrontNet"]
-        private_ip_address_allocation = "Dynamic"
-        public_ip_address_id          = azurerm_public_ip.public_ip.id
-    }
-}
-resource "azurerm_network_interface" "nic2" {
-    name = var.network_interface_name_2
-    resource_group_name = azurerm_resource_group.rg.name
-    location = azurerm_resource_group.rg.location
-
-    ip_configuration {
-        name                          = "NicConfigurationBack"
-        subnet_id                    = module.network.subnet_ids["BackNet"]
-        private_ip_address_allocation = "Dynamic"
-    }
-}
-
 resource "azurerm_public_ip" "public_ip" {
     name = var.public_ip_name
     resource_group_name = azurerm_resource_group.rg.name
@@ -65,8 +41,34 @@ module "vms" {
   vm_names             = ["EhealthFront", "EhealthBack"]
   resource_group_name  = azurerm_resource_group.rg.name
   location             = azurerm_resource_group.rg.location
-  network_interface_ids = [azurerm_network_interface.nic1.id, azurerm_network_interface.nic2.id]
+  network_interface_ids = [module.nic_front.nic_id, module.nic_back.nic_id]
   os_disk_names        = ["os_disk_vm1", "os_disk_vm2"]
   admin_username       = "azureuser"
   ssh_public_keys      = [tls_private_key.ssh_1.public_key_openssh, tls_private_key.ssh_2.public_key_openssh]
+}
+
+module "nic_front" {
+  source              = "./Modules/nic"
+  nic_name            = "nic-front"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = module.network.subnet_ids["FrontNet"]
+  public_ip_address_id = azurerm_public_ip.public_ip.id
+}
+
+module "nic_back" {
+  source              = "./Modules/nic"
+  nic_name            = "nic-back"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = module.network.subnet_ids["BackNet"]
+}
+
+
+module "network_interface" {
+  source              = "./Modules/nic"
+  nic_name            = "my-nic"
+  location            = "West Europe"
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = module.network.subnet_ids["FrontNet"]
 }
