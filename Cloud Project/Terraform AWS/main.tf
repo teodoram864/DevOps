@@ -25,7 +25,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-20.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-*-amd64-server-*"]
   }
 
   filter {
@@ -81,31 +81,35 @@ resource "aws_security_group" "allow_ssh_http_80" {
     }
 }
 
-resource "aws_instance" "nginx-t" {
-    ami = data.aws_ami.aws_linux.id
-    instance_type = "t2.micro"
-    key_name = var.key_name
+resource "aws_instance" "apache-t" {
+    ami                    = data.aws_ami.ubuntu.id  # AMI Ubuntu
+    instance_type          = "t2.micro"
+    key_name               = var.key_name
     vpc_security_group_ids = [aws_security_group.allow_ssh_http_80.id]
-    subnet_id = tolist(data.aws_subnets.default.ids)[0] 
+    subnet_id              = tolist(data.aws_subnets.default.ids)[0] 
     
     connection {
-    type = "ssh"
-    host = self.public_ip
-    user = "ec2-user"
-    private_key = file(var.private_key_path)
+        type        = "ssh"
+        host        = self.public_ip
+        user        = "ubuntu"  # Utilisateur par défaut pour Ubuntu
+        private_key = file(var.private_key_path)
     }
 
     provisioner "remote-exec" {
         inline = [
-            "sudo amazon-linux-extras install nginx1 -y", # Install nginx via Amazon Linux Extras
-            "sudo systemctl start nginx.service" # Start nginx service
+            "sudo apt update",
+            "sudo apt install -y apache2",  # Installer Apache
+            "sudo systemctl start apache2", # Démarrer Apache
+            "sudo systemctl enable apache2" # Activer Apache au démarrage
         ]
     }
 }
 
 
+
 # OUTPUT
 output "aws_instance_public_dns" {
-    value = aws_instance.nginx-t.public_dns
+    value = aws_instance.apache-t.public_dns
 }
+
 

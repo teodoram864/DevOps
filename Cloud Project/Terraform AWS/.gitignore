@@ -5,6 +5,9 @@
 *.tfstate.backup
 .terraform/
 .terraform.lock.hcl
+#add by youssef
+*.tfplan
+#end youssef
 
 # Clés privées et SSH
 *.pem
