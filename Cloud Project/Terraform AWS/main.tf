@@ -24,8 +24,8 @@ data "aws_ami" "ubuntu" {
   owners      = ["099720109477"]
 
   filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-20.04-amd64-server-*"]
+    name   = "image-id"
+    values = ["ami-036c5840e62d3e1e2"]
   }
 
   filter {
@@ -38,24 +38,35 @@ data "aws_ami" "ubuntu" {
     values = ["hvm"]
   }
 }
-data "aws_subnets" "default" {
-  filter {
-    name   = "default-for-az"
-    values = ["true"]
-  }
-}
+# data "aws_subnets" "default" {
+#   filter {
+#     name   = "default-for-az"
+#     values = ["true"]
+#   }
+# }
 
 # RESOURCES
 
 # Default VPC, it won't delete on destroy
 
-resource "aws_default_vpc" "default" {
+# resource "aws_default_vpc" "default" {
+# }
+resource "aws_vpc" "net" {
+cidr_block = "10.0.0.0/16"
 }
+
+module "network" {
+  source          = "./network"
+  subnet_names    = ["subnet1", "subnet2"]  
+  subnet_prefixes = ["10.0.1.0/24", "10.0.2.0/24"]
+  vpc_id          = aws_vpc.net.id
+}
+
 
 resource "aws_security_group" "allow_ssh_http_80" {
     name = "allow_ssh_http_t"
     description = "Allow ssh on 22 & http on port 80"
-    vpc_id = aws_default_vpc.default.id
+    vpc_id = aws_vpc.net.id
  
     ingress {
         from_port = 22
@@ -82,11 +93,11 @@ resource "aws_security_group" "allow_ssh_http_80" {
 }
 
 resource "aws_instance" "nginx-t" {
-    ami = data.aws_ami.aws_linux.id
+    ami = data.aws_ami.ubuntu.id
     instance_type = "t2.micro"
     key_name = var.key_name
     vpc_security_group_ids = [aws_security_group.allow_ssh_http_80.id]
-    subnet_id = tolist(data.aws_subnets.default.ids)[0] 
+    subnet_id = module.network.subnet_ids[0] 
     
     connection {
     type = "ssh"
