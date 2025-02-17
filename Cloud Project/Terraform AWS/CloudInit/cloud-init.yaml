@@ -1,0 +1,27 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+runcmd:
+  # Installer Apache2
+  - apt-get update
+  - apt-get install -y apache2
+  - systemctl enable apache2
+  - systemctl start apache2
+
+  # Modifier la page index.html
+  - echo "<h1>Bienvenue sur mon site !!</h1>" > /var/www/html/index.html
+  - systemctl restart apache2
+
+  # Installer Git et Terraform
+  - apt-get install -y git unzip
+
+  # Télécharger et installer Terraform
+  - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+  - apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+  - apt-get update && apt-get install -y terraform
+
+  # Cloner ton repo Git
+  -  git clone https://github.com/teodoram864/DevOps.git
+
+  
