@@ -1,6 +1,6 @@
-variable "nic_names" {
+variable "nic_name" {
   description = "Nom de l'interface réseau"
-  type        = list(string)
+  type        = string
 }
 
 variable "location" {

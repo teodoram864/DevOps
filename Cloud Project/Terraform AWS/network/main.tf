@@ -12,11 +12,6 @@ variable "vpc_id" {
   type = string
 }
 
-resource "aws_vpc" "net" {
-cidr_block = "10.0.0.0/16"
-
-}
-
 resource "aws_subnet" "subnet" {
   count                = length(var.subnet_names)
 #  name                 = var.subnet_names[count.index]
