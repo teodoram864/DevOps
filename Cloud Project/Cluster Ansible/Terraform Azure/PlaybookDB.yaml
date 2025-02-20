@@ -1,0 +1,60 @@
+- name: Ansible Playbook to Install MySQL
+  hosts: dbservers
+  become: yes
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: /usr/bin/python3.6
+    new_mysql_root_password: redacted
+    mysqlsoftware:
+      - mysql-server
+      - mysql-client
+    ehealth_db_user: "ehealthDb"
+    ehealth_db_password: "ehealth"
+
+  tasks:
+
+    - name: Ensure pip is installed
+      apt:
+        name: python3-pip
+        state: latest
+
+    - name: Install required MySQL development libraries
+      apt:
+        name:
+          - python3-dev
+          - libmysqlclient-dev
+        state: present
+        update_cache: yes
+
+    - name: Install mysqlclient (needed for MySQL user management)
+      pip:
+        name: mysqlclient
+        state: present
+
+    - name: Install PyMySQL
+      pip:
+        name: PyMySQL
+        state: present
+
+    - name: Install Jinja2
+      pip:
+        name: Jinja2
+        state: present
+
+    - name: Install MySQL server and client
+      apt:
+        name: "{{ mysqlsoftware }}"
+        state: present
+        update_cache: yes
+
+    - name: Create the ehealthDb user
+      mysql_user:
+        name: "{{ ehealth_db_user }}"
+        password: "{{ ehealth_db_password }}"
+        priv: "*.*:ALL"
+        state: present
+
+    - name: Start the MySQL service
+      service:
+        name: mysql
+        state: started
