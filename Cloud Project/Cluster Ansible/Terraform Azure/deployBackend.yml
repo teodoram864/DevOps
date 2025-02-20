@@ -1,0 +1,128 @@
+---
+- name: Déploiement complet de l'application Ehealth
+  hosts: backend
+  become: yes
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+    # ➜ Remplace par l'URL racine de ton dépôt Git
+    repo_url: "https://github.com/HaAymar/E-Health.git"
+
+    # ➜ Dossier cible où cloner et compiler
+    app_directory: "/opt/ehealth-backend/E-Health"
+
+    # ➜ Nom du .jar généré par Maven
+    jar_name: "Ehealth-B-0.0.1-SNAPSHOT.jar"
+
+    # ➜ Infos MySQL
+    mysql_root_password: ""
+    mysql_database: "ehealth"
+    mysql_user: "root"
+    mysql_host: "localhost"
+
+  tasks:
+    ########################################################################
+    # 1) Mettre à jour le système et installer les dépendances
+    ########################################################################
+    - name: Mettre à jour le cache des paquets
+      apt:
+        update_cache: yes
+
+    - name: Installer les dépendances nécessaires
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-mysqldb   # Module Python pour MySQL
+          - git
+          - default-jdk       # Installe Java 17 sur Ubuntu 18.04+
+          - maven
+          - mysql-server
+        state: present
+
+    ########################################################################
+    # 2) Configurer MySQL et créer la BDD
+    ########################################################################
+    - name: Vérifier si MySQL est actif
+      systemd:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Assurer que la base de données {{ mysql_database }} existe
+      mysql_db:
+        name: "{{ mysql_database }}"
+        state: present
+        login_user: "{{ mysql_user }}"
+        login_password: "{{ mysql_root_password }}"
+        login_host: "{{ mysql_host }}"
+
+    ########################################################################
+    # 3) (Optionnel) Supprimer l'ancien dossier pour un déploiement propre
+    ########################################################################
+    - name: Supprimer l'ancien dossier s'il existe (optionnel)
+      file:
+        path: "{{ app_directory }}"
+        state: absent
+      ignore_errors: true
+
+    ########################################################################
+    # 4) Cloner le dépôt Git complet
+    ########################################################################
+    - name: Cloner le projet depuis GitHub
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_directory }}"
+        version: main
+        force: yes
+
+    ########################################################################
+    # 5) Compiler l'application avec Maven + --add-opens pour Java 17
+    ########################################################################
+    - name: Compiler l'application avec Maven
+      shell: |
+        export MAVEN_OPTS="$MAVEN_OPTS --add-opens java.base/java.lang=ALL-UNNAMED"
+        mvn clean package
+      args:
+        chdir: "{{ app_directory }}/Backend/Ehealth-B"
+
+    ########################################################################
+    # 6) Arrêter l'ancienne instance si elle tourne
+    ########################################################################
+    - name: Vérifier s'il y a une ancienne instance de l'application
+      command: pgrep -f "{{ jar_name }}"
+      register: running_app
+      ignore_errors: yes
+
+    - name: Arrêter l'ancienne instance de l'application
+      command: kill -9 {{ running_app.stdout }}
+      when: running_app.stdout is defined and running_app.stdout | length > 0
+
+    ########################################################################
+    # 7) Lancer la nouvelle instance
+    ########################################################################
+    - name: Démarrer l'application Ehealth
+      shell: |
+        nohup java -jar target/{{ jar_name }} > app.log 2>&1 &
+      args:
+        chdir: "{{ app_directory }}/Backend/Ehealth-B"
+
+    ########################################################################
+    # 8) Vérifier si l'application tourne et afficher un message
+    ########################################################################
+    - name: Vérifier que l'application tourne
+      command: pgrep -f "{{ jar_name }}"
+      register: app_status
+      failed_when: app_status.rc != 0
+      changed_when: false
+
+    - name: Afficher le statut de l'application (OK)
+      debug:
+        msg: "L'application est en cours d'exécution !"
+      when: app_status.rc == 0
+
+    - name: Afficher le statut de l'application (ERREUR)
+      debug:
+        msg: "L'application n'a pas démarré."
+      when: app_status.rc != 0
