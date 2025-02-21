@@ -1,0 +1,4 @@
+---
+# defaults file for ehealth_backend
+# Variables par défaut pour le rôle Ehealth Backend
+repo_url: "https://github.com/HaAymar/E-Health.git"

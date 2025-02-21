@@ -1,0 +1,6 @@
+---
+- name: Test du rôle Ehealth Backend
+  hosts: localhost
+  roles:
+    - ehealth_backend
+

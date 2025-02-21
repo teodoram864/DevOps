@@ -1,0 +1,4 @@
+repo_url: "https://github.com/HaAymar/E-Health.git"
+app_directory: "/opt/ehealth-backend/E-Health"
+jar_name: "Ehealth-B-0.0.1-SNAPSHOT.jar"
+
