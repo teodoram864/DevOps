@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: "Youssef Ouahalou"
+  description: >
+    Ce rôle permet de déployer l'application E-Health Backend.
+  company: "E-Health"
+  license: "MIT"
+  min_ansible_version: "2.9"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "18.04"
+        - "20.04"
+
+  galaxy_tags:
+    - deployment
+    - ehealth
+    - java
+    - maven
+

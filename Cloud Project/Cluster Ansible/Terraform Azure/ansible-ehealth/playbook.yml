@@ -1,0 +1,8 @@
+---
+- name: Déploiement complet de l'application Ehealth
+  hosts: backend
+  become: yes
+
+  roles:
+    - ehealth_backend
+

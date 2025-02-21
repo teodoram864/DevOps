@@ -1,0 +1,23 @@
+# tasks file for ehealth_backend
+---
+# 1) Mettre à jour le système et installer les dépendances
+- name: Mettre à jour le cache des paquets
+  apt:
+    update_cache: yes
+
+- name: Installer les dépendances nécessaires
+  apt:
+    name:
+      - git
+      - default-jdk  # Installe Java 17 sur Ubuntu 18.04+
+      - maven
+    state: present
+
+# 2) Cloner le dépôt Git
+- name: Cloner le projet depuis GitHub
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_directory }}"
+    version: main
+    force: yes
+
