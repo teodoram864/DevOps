@@ -1,0 +1,45 @@
+---
+- name: Déploiement complet de l'application Ehealth
+  hosts: backend
+  become: yes
+
+  vars:
+ 
+    # ➜ Remplace par l'URL racine de ton dépôt Git
+    repo_url: "https://github.com/HaAymar/E-Health.git"
+
+    # ➜ Dossier cible où cloner et compiler
+    app_directory: "/opt/ehealth-backend/E-Health"
+
+    # ➜ Nom du .jar généré par Maven
+    jar_name: "Ehealth-B-0.0.1-SNAPSHOT.jar"
+
+  tasks:
+    ########################################################################
+    # 1) Mettre à jour le système et installer les dépendances
+    ########################################################################
+    - name: Mettre à jour le cache des paquets
+      apt:
+        update_cache: yes
+
+    - name: Installer les dépendances nécessaires
+      apt:
+        name:
+          - git
+          - default-jdk       # Installe Java 17 sur Ubuntu 18.04+
+          - maven
+        state: present
+
+
+    ########################################################################
+    # 4) Cloner le dépôt Git complet
+    ########################################################################
+    - name: Cloner le projet depuis GitHub
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_directory }}"
+        version: main
+        force: yes
+
+
+
