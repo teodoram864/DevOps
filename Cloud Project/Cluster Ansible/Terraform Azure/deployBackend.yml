@@ -4,8 +4,7 @@
   become: yes
 
   vars:
-    ansible_python_interpreter: /usr/bin/python3
-
+ 
     # ➜ Remplace par l'URL racine de ton dépôt Git
     repo_url: "https://github.com/HaAymar/E-Health.git"
 
@@ -14,12 +13,6 @@
 
     # ➜ Nom du .jar généré par Maven
     jar_name: "Ehealth-B-0.0.1-SNAPSHOT.jar"
-
-    # ➜ Infos MySQL
-    mysql_root_password: ""
-    mysql_database: "ehealth"
-    mysql_user: "root"
-    mysql_host: "localhost"
 
   tasks:
     ########################################################################
@@ -32,31 +25,11 @@
     - name: Installer les dépendances nécessaires
       apt:
         name:
-          - python3
-          - python3-pip
-          - python3-mysqldb   # Module Python pour MySQL
           - git
           - default-jdk       # Installe Java 17 sur Ubuntu 18.04+
           - maven
-          - mysql-server
         state: present
 
-    ########################################################################
-    # 2) Configurer MySQL et créer la BDD
-    ########################################################################
-    - name: Vérifier si MySQL est actif
-      systemd:
-        name: mysql
-        state: started
-        enabled: yes
-
-    - name: Assurer que la base de données {{ mysql_database }} existe
-      mysql_db:
-        name: "{{ mysql_database }}"
-        state: present
-        login_user: "{{ mysql_user }}"
-        login_password: "{{ mysql_root_password }}"
-        login_host: "{{ mysql_host }}"
 
     ########################################################################
     # 3) (Optionnel) Supprimer l'ancien dossier pour un déploiement propre
