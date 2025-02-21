@@ -1,0 +1,8 @@
+ansible_python_interpreter: /usr/bin/python3.6
+new_mysql_root_password: redacted
+mysqlsoftware:
+  - mysql-server
+  - mysql-client
+ehealth_db_user: "ehealthDb"
+ehealth_db_password: "ehealth"
+

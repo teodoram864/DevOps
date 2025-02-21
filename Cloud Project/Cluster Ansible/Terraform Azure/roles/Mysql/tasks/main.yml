@@ -1,0 +1,54 @@
+- name: Ensure Python 3 is installed
+  apt:
+    name: python3
+    state: present
+    update_cache: yes
+
+- name: Ensure pip is installed
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+
+- name: Install required MySQL development libraries
+  apt:
+    name:
+      - python3-dev
+      - libmysqlclient-dev
+    state: present
+
+- name: Install mysqlclient (needed for MySQL user management)
+  pip:
+    name: mysqlclient
+    state: present
+
+- name: Install PyMySQL
+  pip:
+    name: PyMySQL
+    state: present
+
+- name: Install Jinja2
+  pip:
+    name: Jinja2
+    state: present
+
+- name: Install MySQL server and client
+  apt:
+    name: "{{ mysqlsoftware }}"
+    state: present
+
+- name: Create the ehealthDb user
+  mysql_user:
+    name: "{{ ehealth_db_user }}"
+    password: "{{ ehealth_db_password }}"
+    priv: "*.*:ALL"
+    state: present
+  become: yes
+
+- name: Start the MySQL service
+  service:
+    name: mysql
+    state: started
+  become: yes
+  notify: Restart MySQL
+
