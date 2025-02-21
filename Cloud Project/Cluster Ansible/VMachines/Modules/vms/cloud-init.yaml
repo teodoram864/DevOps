@@ -1,0 +1,30 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - ansible
+  - unzip
+
+runcmd:
+  - sudo apt-get install -y git unzip
+
+  - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+  - sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+  - sudo apt-get update -y
+  - sudo apt-get install -y terraform
+
+# #!/bin/bash
+# # Mise à jour des paquets
+# sudo apt-get update -y
+
+# # Installation des dépendances
+# sudo apt-get install -y wget unzip curl apt-transport-https
+
+# # Téléchargement et installation de Terraform
+# curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+# sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+# sudo apt-get update -y
+# sudo apt-get install -y terraform
+
+# # Vérification de l'installation
+# terraform -version
