@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "rg" {
-  name = "Ehealth-rg"
+  name = "controlmachine_rg"
   location = "West Europe"
 }
 
@@ -31,7 +31,7 @@ module "network" {
   resource_group_name = azurerm_resource_group.rg.name
   address_space       = ["10.0.0.0/16"]
   subnet_prefixes     = ["10.0.1.0/24", "10.0.2.0/24"]
-  subnet_names        = ["ControlNet", "BackMysqlNet"]
+  subnet_names        = ["FrontNet", "BackMysqlNet"]
 
   depends_on = [ azurerm_resource_group.rg ]
 }
@@ -43,12 +43,12 @@ module "nsg" {
   location            = azurerm_resource_group.rg.location
 }
 
-module "nic_control" {
+module "nic_front" {
   source              = "./Modules/nic"
-  nic_name            = "nic-control"
+  nic_name            = "nic-front"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  subnet_id           = module.network.subnet_ids["ControlNet"]
+  subnet_id           = module.network.subnet_ids["FrontNet"]
   public_ip_address_id = azurerm_public_ip.public_ip.id
 }
 
@@ -71,10 +71,10 @@ module "nic_mysql" {
 
 module "vms" {
   source                = "./Modules/vms"
-  vm_names             = ["ControlPlane", "Backend", "Mysql"]
+  vm_names             = ["Frontend", "Backend", "Mysql"]
   resource_group_name  = azurerm_resource_group.rg.name
   location             = azurerm_resource_group.rg.location
-  network_interface_ids = [module.nic_control.nic_id, module.nic_back.nic_id, module.nic_mysql.nic_id]
+  network_interface_ids = [module.nic_front.nic_id, module.nic_back.nic_id, module.nic_mysql.nic_id]
   os_disk_names        = ["os_disk_vm1", "os_disk_vm2", "os_disk_vm3"]
   admin_username       = "azureuser"
   ssh_public_keys      = [tls_private_key.ssh_1.public_key_openssh, tls_private_key.ssh_2.public_key_openssh, tls_private_key.ssh_3.public_key_openssh]

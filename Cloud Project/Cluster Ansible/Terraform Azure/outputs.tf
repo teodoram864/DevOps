@@ -1,4 +1,4 @@
-output "PrivateKeyControl" {
+output "PrivateKeyFront" {
     value = tls_private_key.ssh_1.private_key_pem
     sensitive = true
 }

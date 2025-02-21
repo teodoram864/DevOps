@@ -1,0 +1,8 @@
+resource_group_name         = "controlmachine_rg"
+resource_group_location     = "West Europe"
+virtual_network_name        = "vnet"
+subnet_name                 = "cm_subnet"
+public_ip_name              = "cm_publicip"
+network_security_group_name = "cm_nsg"
+network_interface_name      = "cm_nic"
+linux_virtual_machine_name  = "ControlMachine"
