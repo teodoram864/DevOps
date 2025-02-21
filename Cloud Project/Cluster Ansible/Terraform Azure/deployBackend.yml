@@ -32,15 +32,6 @@
 
 
     ########################################################################
-    # 3) (Optionnel) Supprimer l'ancien dossier pour un déploiement propre
-    ########################################################################
-    - name: Supprimer l'ancien dossier s'il existe (optionnel)
-      file:
-        path: "{{ app_directory }}"
-        state: absent
-      ignore_errors: true
-
-    ########################################################################
     # 4) Cloner le dépôt Git complet
     ########################################################################
     - name: Cloner le projet depuis GitHub
@@ -50,52 +41,5 @@
         version: main
         force: yes
 
-    ########################################################################
-    # 5) Compiler l'application avec Maven + --add-opens pour Java 17
-    ########################################################################
-    - name: Compiler l'application avec Maven
-      shell: |
-        export MAVEN_OPTS="$MAVEN_OPTS --add-opens java.base/java.lang=ALL-UNNAMED"
-        mvn clean package
-      args:
-        chdir: "{{ app_directory }}/Backend/Ehealth-B"
 
-    ########################################################################
-    # 6) Arrêter l'ancienne instance si elle tourne
-    ########################################################################
-    - name: Vérifier s'il y a une ancienne instance de l'application
-      command: pgrep -f "{{ jar_name }}"
-      register: running_app
-      ignore_errors: yes
 
-    - name: Arrêter l'ancienne instance de l'application
-      command: kill -9 {{ running_app.stdout }}
-      when: running_app.stdout is defined and running_app.stdout | length > 0
-
-    ########################################################################
-    # 7) Lancer la nouvelle instance
-    ########################################################################
-    - name: Démarrer l'application Ehealth
-      shell: |
-        nohup java -jar target/{{ jar_name }} > app.log 2>&1 &
-      args:
-        chdir: "{{ app_directory }}/Backend/Ehealth-B"
-
-    ########################################################################
-    # 8) Vérifier si l'application tourne et afficher un message
-    ########################################################################
-    - name: Vérifier que l'application tourne
-      command: pgrep -f "{{ jar_name }}"
-      register: app_status
-      failed_when: app_status.rc != 0
-      changed_when: false
-
-    - name: Afficher le statut de l'application (OK)
-      debug:
-        msg: "L'application est en cours d'exécution !"
-      when: app_status.rc == 0
-
-    - name: Afficher le statut de l'application (ERREUR)
-      debug:
-        msg: "L'application n'a pas démarré."
-      when: app_status.rc != 0
